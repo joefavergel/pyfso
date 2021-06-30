@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
+from scipy import special
 
 from pyfso.core.utils import cart2pol
 
@@ -29,7 +29,7 @@ class BesselGauss(object):
         self.w = self.wo*np.sqrt(1+(self.z/self.zr)**2)
         self.kt = self.k/500
         self.E = np.multiply(
-            sp.special.jv(self.m, self.kt*self.rho),
+            special.jv(self.m, self.kt*self.rho),
             np.multiply(np.exp(j*self.m*self.phi),
             np.exp(np.multiply(-self.rho,self.rho)/(self.w**2)))
         )
