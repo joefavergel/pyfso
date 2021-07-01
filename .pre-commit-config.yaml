@@ -1,0 +1,58 @@
+repos:
+-   repo: https://github.com/nbQA-dev/nbQA
+    rev: 0.9.0
+    hooks:
+    - id: nbqa-black
+      args: [--nbqa-mutate]
+    - id: nbqa-pyupgrade
+      args: [--nbqa-mutate, --py36-plus]
+    - id: nbqa-isort
+      args: [--nbqa-mutate]
+    - id: nbqa-autoflake
+      args: [--nbqa-mutate]
+
+-   repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+    - id: autoflake
+      args: ['--in-place', '--remove-all-unused-imports', '--remove-unused-variable']
+
+-   repo: https://github.com/psf/black
+    rev: 21.5b1
+    hooks:
+    - id: black
+      name: black
+      stages: [commit]
+      language_version: python3
+      entry: pipenv run black
+      types: [python]
+
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.8.0
+    hooks:
+    - id: isort
+      name: isort
+      stages: [commit]
+      language_version: python3
+      entry: pipenv run isort
+      types: [python]
+
+-   repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+    - id: flake8
+      name: flake8
+      stages: [commit]
+      language_version: python3
+      entry: pipenv run flake8
+      types: [python]
+      exclude: setup.py
+
+-   repo: local
+    hooks:
+    - id: jupyter-nb-clear-output
+      name: jupyter-nb-clear-output
+      files: \.ipynb$
+      stages: [commit]
+      language: system
+      entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
