@@ -1,7 +1,26 @@
-from abc import ABCMeta
+# -*- coding: utf-8 -*-
+
+from abc import ABC, abstractclassmethod
+
+import numpy as np
+
+from pyfso.core.utils import cart2pol
 
 
-class BaseBeam(ABCMeta):
+class AbstractBeam(ABC):
+    def __init__(self):
+        print(f"Initializing {self.__class__.__name__}")
+
+    @abstractclassmethod
+    def create_grid(self):
+        pass
+
+    @abstractclassmethod
+    def compute_optical_params(self):
+        pass
+
+
+class BaseBeam(AbstractBeam):
     def __init__(
         self,
         n_samples: int = 1023,
@@ -17,9 +36,11 @@ class BaseBeam(ABCMeta):
         self.angular_momentum = angular_momentum
         self.beam_waist = beam_waist
         self.z_coor = z_coor
-        self.dl = self.grid_length / self.n_samples
+        self.grid_spacing = self.grid_length / self.n_samples
+        self.create_grid()
+        self.compute_optical_params()
 
-    def __create_grid(self):
+    def create_grid(self):
         self.x = (
             np.arange(-self.n_samples / 2, self.n_samples / 2 + 1, 1)
             * self.grid_spacing
@@ -28,6 +49,14 @@ class BaseBeam(ABCMeta):
             np.arange(self.n_samples / 2, -self.n_samples / 2 - 1, -1)
             * self.grid_spacing
         )
-        self.X, self.Y = np.meshgrid(self.x, self.y)
-        self.phi, self.rho = cart2pol(self.X, self.Y)
+        self.xx, self.yy = np.meshgrid(self.x, self.y)
+        self.phi, self.rho = cart2pol(self.xx, self.yy)
         self.phi = np.rot90(self.phi)
+
+    def compute_optical_params(self):
+        self.wave_number = 2 * np.pi / self.wave_length
+        self.rayleigh_range = (np.pi * (self.beam_waist ** 2)) / self.wave_length
+        self.beam_width = self.beam_waist * np.sqrt(
+            1 + (self.z_coor / self.rayleigh_range) ** 2
+        )
+        self.kt = self.wave_number / 500
