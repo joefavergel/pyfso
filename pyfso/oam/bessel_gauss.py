@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import special
 
-from pyfso.oam.base import BaseBeam
+from pyfso.core import BaseBeam
 
 plt.style.use("science")
 
@@ -129,19 +129,35 @@ class BesselGauss(BaseBeam):
         intensity = np.multiply(self.E, np.conj(self.E))
         return intensity
 
-    def plot_oam(self):
+    def plot_beam(self, show: bool = True):
+        intensity = self.compute_intensity()
         with plt.style.context(["dark_background", "science", "high-vis"]):
-            plt.figure(figsize=(12, 12))
-            intensity = self.compute_intensity()
-            plt.imshow(np.real(intensity), extent=[0, 1, 0, 1], cmap="inferno")
-            plt.title(
+            fig, ax = plt.subplots(figsize=(12, 12))
+            ax.imshow(np.real(intensity), extent=[0, 1, 0, 1], cmap="inferno")
+            ax.set_title(
                 r"Bessel-Gauss ${kind_}(z)$ Beam to First Diffraction Order with $m={am}$".format(
                     am=self.angular_momentum, kind_=self.kind
                 ),
                 fontsize=24,
             )
-            plt.xlim(0.3, 0.7)
-            plt.ylim(0.3, 0.7)
-            plt.xticks(fontsize=16)
-            plt.yticks(fontsize=16)
-            plt.show()
+
+            # TODO: To modularize as external function
+            ax.set_xlim(0.3, 0.7)
+            ax.set_ylim(0.3, 0.7)
+
+            # TODO: To modularize as external function
+            label_format = "{:.2f}"
+            x_ticks_loc = ax.get_xticks().tolist()
+            ax.set_xticks(ax.get_xticks().tolist())
+            ax.set_xticklabels(
+                [label_format.format(x_tick) for x_tick in x_ticks_loc], fontsize=16
+            )
+            y_ticks_loc = ax.get_yticks().tolist()
+            ax.set_yticks(ax.get_yticks().tolist())
+            ax.set_yticklabels(
+                [label_format.format(y_tick) for y_tick in y_ticks_loc], fontsize=16
+            )
+
+            if show:
+                plt.show()
+            return ax

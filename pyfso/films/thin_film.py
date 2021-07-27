@@ -3,18 +3,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pyfso.films.base import BaseFilm
+from pyfso.core import BaseMesh
 
 plt.style.use("science")
 
 
-class ThinFilm(BaseFilm):
+class ThinFilm(BaseMesh):
     def __init__(
         self,
         n_samples: int = 1023,
         grid_length: int = 5.0e-3,
         r: float = 20.0,
-        angle: float = np.pi/2,
+        angle: float = np.pi / 2,
         transmittance: float = 0.0,
     ):
         """Thin film
@@ -32,7 +32,7 @@ class ThinFilm(BaseFilm):
             compute MACD line.
 
         r: float, deafult = 20.0
-            ...
+            Radius of the region where the transmittance is one
 
         angle: float, deafult = pi/2
             Angle of the thin film.
@@ -68,27 +68,28 @@ class ThinFilm(BaseFilm):
 
     def create(self):
         j = 0.0 + 1.0j
-        for i in range(0,len(self.xx)):
-            for j in range(0,len(self.xx)):
-                if self.yy[i,j] >= 0 and ((self.xx[i,j]**2)+(self.yy[i,j]**2)) <= self.r**2 and self.phi[i,j] <= np.pi/2 and self.angle <= self.phi[i,j]:
-                    self.c_mask[i,j] = 1.0
+        self.c_mask = np.ones((len(self.xx), len(self.yy)))
+        for i in range(0, len(self.xx)):
+            for j in range(0, len(self.xx)):
+                if (
+                    self.yy[i, j] >= 0
+                    and ((self.xx[i, j] ** 2) + (self.yy[i, j] ** 2)) <= self.r ** 2
+                    and self.phi[i, j] <= np.pi / 2
+                    and self.angle <= self.phi[i, j]
+                ):
+                    self.c_mask[i, j] = 1.0
                 else:
-                    self.c_mask[i,j] = self.transmittance
-                return(self.c_mask)
+                    self.c_mask[i, j] = self.transmittance
+        return self.c_mask
 
     def plot_film(self):
-        with plt.style.context(["dark_background", "science", "high-vis"]):
+        with plt.style.context(["science", "high-vis"]):
             plt.figure(figsize=(12, 12))
-            plt.imshow(self.c_mask, extent=[0, 1, 0, 1],cmap='inferno')
+            plt.imshow(self.c_mask, extent=[0, 1, 0, 1], cmap="gray")
             plt.title(
-                r"Thin film with transmittance $={tr}$".format(
-                    tr=self.transmittance
-                ),
+                r"Thin film with transmittance $={tr}$".format(tr=self.transmittance),
                 fontsize=24,
             )
-            plt.xlim(0.3, 0.7)
-            plt.ylim(0.3, 0.7)
             plt.xticks(fontsize=16)
             plt.yticks(fontsize=16)
             plt.show()
-
